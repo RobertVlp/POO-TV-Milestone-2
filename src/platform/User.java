@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import platform.movies.Movie;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
-@JsonIgnoreProperties({"availableMovies"})
+@JsonIgnoreProperties({"availableMovies", "subscribedGenres", "pages"})
 public final class User {
     public static final class Credentials {
         private String name;
@@ -63,6 +64,30 @@ public final class User {
     private final ArrayList<Movie> likedMovies;
     private final ArrayList<Movie> ratedMovies;
     private final ArrayList<Movie> availableMovies;
+    private final ArrayList<String> subscribedGenres;
+    private final Stack<String> pages;
+    private final ArrayList<Notifications> notifications;
+
+    private static final class Notifications {
+        private String movieName;
+        private String message;
+
+        public String getMovieName() {
+            return movieName;
+        }
+
+        public void setMovieName(final String movieName) {
+            this.movieName = movieName;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(final String message) {
+            this.message = message;
+        }
+    }
 
     public User() {
         availableMovies = new ArrayList<>();
@@ -70,6 +95,9 @@ public final class User {
         purchasedMovies = new ArrayList<>();
         likedMovies = new ArrayList<>();
         ratedMovies = new ArrayList<>();
+        subscribedGenres = new ArrayList<>();
+        pages = new Stack<>();
+        notifications = new ArrayList<>();
         setNumFreePremiumMovies(15);
         setTokensCount(0);
     }
@@ -116,5 +144,17 @@ public final class User {
 
     public ArrayList<Movie> getAvailableMovies() {
         return availableMovies;
+    }
+
+    public ArrayList<String> getSubscribedGenres() {
+        return subscribedGenres;
+    }
+
+    public Stack<String> getPages() {
+        return pages;
+    }
+
+    public ArrayList<Notifications> getNotifications() {
+        return notifications;
     }
 }

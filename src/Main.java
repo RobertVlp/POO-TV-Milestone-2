@@ -1,6 +1,6 @@
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import platform.PlatformConstants;
 import platform.actions.ActionsWrapper;
 import platform.Platform;
 import visitor.PlatformVisitor;
@@ -15,16 +15,18 @@ public final class Main {
      * @throws IOException exception for reading/writing
      */
     public static void main(final String[] args) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Platform platform = objectMapper.readValue(new File(args[0]), Platform.class);
+        PlatformConstants.setInputFile(args[0]);
+        PlatformConstants.setOutputFile(args[1]);
 
-        ArrayNode output = objectMapper.createArrayNode();
-        PlatformVisitor platformVisitor = new PlatformVisitor(platform);
+        Platform platform = Platform.getInstance();
+
+        ArrayNode output = PlatformConstants.OBJECT_MAPPER.createArrayNode();
+        PlatformVisitor platformVisitor = new PlatformVisitor();
 
         ActionsWrapper actions = new ActionsWrapper(platform, platform.getActions());
-        actions.performActions(platformVisitor, objectMapper, output);
+        actions.performActions(platformVisitor, output);
 
-        ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
-        objectWriter.writeValue(new File(args[1]), output);
+        ObjectWriter objectWriter = PlatformConstants.OBJECT_MAPPER.writerWithDefaultPrettyPrinter();
+        objectWriter.writeValue(new File(PlatformConstants.getOutputFile()), output);
     }
 }

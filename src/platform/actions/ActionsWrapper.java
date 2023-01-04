@@ -4,31 +4,36 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import commands.*;
 import platform.Platform;
+import platform.PlatformConstants;
 import visitor.PlatformVisitor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public final class ActionsWrapper {
     private final Platform platform;
     private final ArrayList<Action> actions;
+    private final ObjectMapper objectMapper;
+    private final Invoker invoker;
 
     public ActionsWrapper(final Platform platform, final ArrayList<Action> actions) {
         this.platform = platform;
         this.actions = actions;
+        objectMapper = PlatformConstants.OBJECT_MAPPER;
+        invoker = new Invoker();
     }
 
     /**
      * Performs the actions received from the input
-     * @param objectMapper for object mapper
      * @param output for output
      * @throws JsonProcessingException in case of exceptions when processing the json object
      */
     public void performActions(
             final PlatformVisitor platformVisitor,
-            final ObjectMapper objectMapper,
             final ArrayNode output
-    ) throws JsonProcessingException {
+    ) throws IOException {
         for (Action action : actions) {
             ObjectNode jsonObject = objectMapper.createObjectNode();
 
@@ -40,6 +45,32 @@ public final class ActionsWrapper {
                             jsonObject,
                             objectMapper
                     );
+
+                case "back" ->
+                        invoker.runCommand(
+                                new BackCommand(),
+                                jsonObject
+                        );
+
+                case "database" -> {
+                    switch (action.getFeature()) {
+                        case "add" ->
+                                invoker.runCommand(
+                                        new AddMovieCommand(action.getAddedMovie()),
+                                        jsonObject
+                                );
+
+                        case "delete" ->
+                                invoker.runCommand(
+                                        new DeleteMovieCommand(action.getDeletedMovie()),
+                                        jsonObject
+                                );
+
+                        default -> {
+
+                        }
+                    }
+                }
 
                 case "on page" -> {
                     switch (action.getFeature()) {
@@ -116,6 +147,12 @@ public final class ActionsWrapper {
                                         action.getRate(),
                                         jsonObject,
                                         objectMapper
+                                );
+
+                        case "subscribe" ->
+                                invoker.runCommand(
+                                        new SubscribeCommand(action.getSubscribedGenre()),
+                                        jsonObject
                                 );
 
                         default -> {

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 @JsonIgnoreProperties({"ratings"})
 public final class Movie {
     private String name;
-    private Integer year;
+    private String year;
     private Integer duration;
     private ArrayList<String> genres;
     private ArrayList<String> actors;
@@ -31,11 +31,11 @@ public final class Movie {
         this.name = name;
     }
 
-    public Integer getYear() {
+    public String getYear() {
         return year;
     }
 
-    public void setYear(final Integer year) {
+    public void setYear(final String year) {
         this.year = year;
     }
 

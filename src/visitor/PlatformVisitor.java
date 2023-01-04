@@ -1,7 +1,10 @@
 package visitor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+
+import platform.PlatformConstants;
 import platform.actions.Action;
 import platform.Platform;
 import platform.User;
@@ -11,8 +14,8 @@ import platform.movies.SortMoviesComparator;
 public final class PlatformVisitor implements Visitor {
     private final Platform platform;
 
-    public PlatformVisitor(final Platform platform) {
-        this.platform = platform;
+    public PlatformVisitor() throws IOException {
+        platform = Platform.getInstance();
     }
 
     @Override
