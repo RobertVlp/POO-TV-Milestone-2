@@ -1,10 +1,10 @@
-package visitor;
+package platform.visitor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import platform.PlatformConstants;
 import platform.actions.Action;
 import platform.Platform;
 import platform.User;
@@ -14,8 +14,8 @@ import platform.movies.SortMoviesComparator;
 public final class PlatformVisitor implements Visitor {
     private final Platform platform;
 
-    public PlatformVisitor() throws IOException {
-        platform = Platform.getInstance();
+    public PlatformVisitor(final Platform platform) {
+        this.platform = platform;
     }
 
     @Override
@@ -213,6 +213,11 @@ public final class PlatformVisitor implements Visitor {
         }
 
         User currentUser = platform.getCurrentUser();
+
+        if (currentUser.getPurchasedMovies().contains(platform.getSearchedMovie())) {
+            return "Error";
+        }
+
         Integer numberOfTokens = currentUser.getTokensCount();
 
         if (currentUser.getCredentials().getAccountType().equals("premium")) {
@@ -265,7 +270,9 @@ public final class PlatformVisitor implements Visitor {
         }
 
         if (isMoviePurchased) {
-            currentUser.getWatchedMovies().add(platform.getSearchedMovie());
+            if (!currentUser.getWatchedMovies().contains(platform.getSearchedMovie())) {
+                currentUser.getWatchedMovies().add(platform.getSearchedMovie());
+            }
         } else {
             return "Error";
         }
@@ -308,17 +315,27 @@ public final class PlatformVisitor implements Visitor {
             return "Error";
         }
 
+        User currentUser = platform.getCurrentUser();
+        Integer numRatings = searchedMovie.getNumRatings();
+
         if (isMovieWatched(searchedMovie)) {
-            searchedMovie.getRatings().add(Double.valueOf(rate));
-            Integer numRatings = searchedMovie.getNumRatings();
-            numRatings += 1;
+            if (isMovieRated(searchedMovie)) {
+                double rating = searchedMovie.getRatings().get(currentUser.getCredentials());
+                searchedMovie.getRatings().replace(currentUser.getCredentials(), rating, Double.valueOf(rate));
+            } else {
+                searchedMovie.getRatings().put(currentUser.getCredentials(), Double.valueOf(rate));
+                numRatings++;
+                searchedMovie.setNumRatings(numRatings);
+                currentUser.getRatedMovies().add(searchedMovie);
+            }
 
-            AtomicReference<Double> totalRating = new AtomicReference<>(0D);
+            double totalRating = 0;
 
-            searchedMovie.getRatings().forEach(rating -> totalRating.updateAndGet(v -> v + rating));
-            searchedMovie.setNumRatings(numRatings);
-            searchedMovie.setRating(totalRating.get() / numRatings);
-            platform.getCurrentUser().getRatedMovies().add(searchedMovie);
+            for (Map.Entry<User.Credentials, Double> entry : searchedMovie.getRatings().entrySet()) {
+                totalRating += entry.getValue();
+            }
+
+            searchedMovie.setRating(totalRating / numRatings);
         } else {
             return "Error";
         }
@@ -332,6 +349,16 @@ public final class PlatformVisitor implements Visitor {
                 if (watchedMovie.getName().equals(movie.getName())) {
                     return true;
                 }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isMovieRated(final Movie movie) {
+        for (Movie ratedMovie : platform.getCurrentUser().getRatedMovies()) {
+            if (ratedMovie.equals(movie)) {
+                return true;
             }
         }
 

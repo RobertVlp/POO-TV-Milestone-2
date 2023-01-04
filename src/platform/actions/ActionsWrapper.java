@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import commands.*;
 import platform.Platform;
 import platform.PlatformConstants;
-import visitor.PlatformVisitor;
+import platform.visitor.PlatformVisitor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public final class ActionsWrapper {
 
                 case "back" ->
                         invoker.runCommand(
-                                new BackCommand(),
+                                new BackCommand(platform),
                                 jsonObject
                         );
 
@@ -56,13 +56,13 @@ public final class ActionsWrapper {
                     switch (action.getFeature()) {
                         case "add" ->
                                 invoker.runCommand(
-                                        new AddMovieCommand(action.getAddedMovie()),
+                                        new AddMovieCommand(action.getAddedMovie(), platform),
                                         jsonObject
                                 );
 
                         case "delete" ->
                                 invoker.runCommand(
-                                        new DeleteMovieCommand(action.getDeletedMovie()),
+                                        new DeleteMovieCommand(action.getDeletedMovie(), platform),
                                         jsonObject
                                 );
 
@@ -151,7 +151,7 @@ public final class ActionsWrapper {
 
                         case "subscribe" ->
                                 invoker.runCommand(
-                                        new SubscribeCommand(action.getSubscribedGenre()),
+                                        new SubscribeCommand(action.getSubscribedGenre(), platform),
                                         jsonObject
                                 );
 

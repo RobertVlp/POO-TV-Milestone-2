@@ -2,12 +2,13 @@ package platform;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import platform.movies.Movie;
+import platform.observer.Observer;
 
 import java.util.ArrayList;
 import java.util.Stack;
 
 @JsonIgnoreProperties({"availableMovies", "subscribedGenres", "pages"})
-public final class User {
+public final class User implements Observer {
     public static final class Credentials {
         private String name;
         private String password;
@@ -68,25 +69,7 @@ public final class User {
     private final Stack<String> pages;
     private final ArrayList<Notifications> notifications;
 
-    private static final class Notifications {
-        private String movieName;
-        private String message;
-
-        public String getMovieName() {
-            return movieName;
-        }
-
-        public void setMovieName(final String movieName) {
-            this.movieName = movieName;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(final String message) {
-            this.message = message;
-        }
+    private record Notifications(String movieName, String message) {
     }
 
     public User() {
@@ -100,6 +83,42 @@ public final class User {
         notifications = new ArrayList<>();
         setNumFreePremiumMovies(15);
         setTokensCount(0);
+    }
+
+    @Override
+    public void updateAddedMovie(final Movie addedMovie) {
+        if (addedMovie.getCountriesBanned().contains(credentials.country)) {
+            return;
+        }
+
+        for (String genre : addedMovie.getGenres()) {
+            if (subscribedGenres.contains(genre)) {
+                notifications.add(new Notifications(addedMovie.getName(), "ADD"));
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void updateDeletedMovie(final String deletedMovie) {
+        for (Movie movie : purchasedMovies) {
+            if (movie.getName().equals(deletedMovie)) {
+                notifications.add(new Notifications(deletedMovie, "DELETE"));
+
+                purchasedMovies.remove(movie);
+                watchedMovies.remove(movie);
+                ratedMovies.remove(movie);
+                likedMovies.remove(movie);
+
+                if (credentials.getAccountType().equals("premium")) {
+                    numFreePremiumMovies++;
+                } else {
+                    tokensCount += 2;
+                }
+
+                break;
+            }
+        }
     }
 
     public Credentials getCredentials() {

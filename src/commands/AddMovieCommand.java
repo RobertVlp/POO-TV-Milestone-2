@@ -7,15 +7,13 @@ import platform.Platform;
 import platform.PlatformConstants;
 import platform.movies.Movie;
 
-import java.io.IOException;
-
-public class AddMovieCommand implements Command {
+public final class AddMovieCommand implements Command {
     private final Platform platform;
     private final ObjectMapper objectMapper;
     private final Movie addedMovie;
 
-    public AddMovieCommand(final Movie addedMovie) throws IOException {
-        platform = Platform.getInstance();
+    public AddMovieCommand(final Movie addedMovie, final Platform platform) {
+        this.platform = platform;
         objectMapper = PlatformConstants.OBJECT_MAPPER;
         this.addedMovie = addedMovie;
     }
@@ -28,5 +26,6 @@ public class AddMovieCommand implements Command {
         }
 
         platform.getMovies().add(addedMovie);
+        platform.modifyState("ADD", addedMovie, null);
     }
 }

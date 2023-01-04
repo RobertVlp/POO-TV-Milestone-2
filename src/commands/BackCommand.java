@@ -7,14 +7,12 @@ import platform.Platform;
 import platform.PlatformConstants;
 import platform.User;
 
-import java.io.IOException;
-
 public final class BackCommand implements Command {
     private final Platform platform;
     private final ObjectMapper objectMapper;
 
-    public BackCommand() throws IOException {
-        platform = Platform.getInstance();
+    public BackCommand(final Platform platform) {
+        this.platform = platform;
         objectMapper = PlatformConstants.OBJECT_MAPPER;
     }
 
@@ -30,6 +28,17 @@ public final class BackCommand implements Command {
         if (currentUser.getPages().isEmpty()) {
             parseErrorOutput(jsonObject, objectMapper);
         } else {
+            String currentPage = currentUser.getPages().pop();
+
+            if (currentPage.equals("homepage autentificat")) {
+                parseErrorOutput(jsonObject, objectMapper);
+                return;
+            }
+
+            if (currentUser.getPages().isEmpty()) {
+                return;
+            }
+
             String lastAccessedPage = currentUser.getPages().pop();
 
             platform.setCurrentPage(lastAccessedPage);

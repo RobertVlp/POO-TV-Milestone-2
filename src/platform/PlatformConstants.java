@@ -3,7 +3,7 @@ package platform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class PlatformConstants {
-    private PlatformConstants () {
+    private PlatformConstants() {
     }
 
     private static String inputFile;

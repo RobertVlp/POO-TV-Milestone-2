@@ -1,7 +1,10 @@
 package platform.movies;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import platform.User;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 
 @JsonIgnoreProperties({"ratings"})
 public final class Movie {
@@ -13,14 +16,14 @@ public final class Movie {
     private ArrayList<String> countriesBanned;
     private Integer numLikes;
     private Double rating;
-    private final ArrayList<Double> ratings;
+    private final HashMap<User.Credentials, Double> ratings;
     private Integer numRatings;
 
     public Movie() {
         setNumLikes(0);
         setNumRatings(0);
         setRating(0D);
-        ratings = new ArrayList<>();
+        ratings = new HashMap<>();
     }
 
     public String getName() {
@@ -95,7 +98,7 @@ public final class Movie {
         this.numRatings = numRatings;
     }
 
-    public ArrayList<Double> getRatings() {
+    public HashMap<User.Credentials, Double> getRatings() {
         return ratings;
     }
 }

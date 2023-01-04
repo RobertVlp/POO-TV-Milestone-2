@@ -7,33 +7,27 @@ import platform.Platform;
 import platform.PlatformConstants;
 import platform.movies.Movie;
 
-import java.io.IOException;
-
-public class DeleteMovieCommand implements Command {
+public final class DeleteMovieCommand implements Command {
     private final Platform platform;
     private final ObjectMapper objectMapper;
     private final String deletedMovie;
 
-    public DeleteMovieCommand(final String deletedMovie) throws IOException {
-        platform = Platform.getInstance();
+    public DeleteMovieCommand(final String deletedMovie, final Platform platform) {
+        this.platform = platform;
         objectMapper = PlatformConstants.OBJECT_MAPPER;
         this.deletedMovie = deletedMovie;
     }
 
     @Override
     public void execute(final ObjectNode jsonObject) throws JsonProcessingException {
-        boolean deleted = false;
-
         for (Movie movie : platform.getMovies()) {
             if (movie.getName().equals(deletedMovie)) {
                 platform.getMovies().remove(movie);
-                deleted = true;
-                break;
+                platform.modifyState("DELETE", null, deletedMovie);
+                return;
             }
         }
 
-        if (!deleted) {
-            parseErrorOutput(jsonObject, objectMapper);
-        }
+        parseErrorOutput(jsonObject, objectMapper);
     }
 }

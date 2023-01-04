@@ -1,4 +1,4 @@
-package visitor;
+package platform.visitor;
 
 import platform.actions.Action;
 import platform.User;

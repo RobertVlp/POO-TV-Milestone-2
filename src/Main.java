@@ -3,7 +3,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import platform.PlatformConstants;
 import platform.actions.ActionsWrapper;
 import platform.Platform;
-import visitor.PlatformVisitor;
+import platform.visitor.PlatformVisitor;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,10 +18,10 @@ public final class Main {
         PlatformConstants.setInputFile(args[0]);
         PlatformConstants.setOutputFile(args[1]);
 
-        Platform platform = Platform.getInstance();
+        Platform platform = PlatformConstants.OBJECT_MAPPER.readValue(new File(args[0]), Platform.class);
 
         ArrayNode output = PlatformConstants.OBJECT_MAPPER.createArrayNode();
-        PlatformVisitor platformVisitor = new PlatformVisitor();
+        PlatformVisitor platformVisitor = new PlatformVisitor(platform);
 
         ActionsWrapper actions = new ActionsWrapper(platform, platform.getActions());
         actions.performActions(platformVisitor, output);

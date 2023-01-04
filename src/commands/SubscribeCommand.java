@@ -8,15 +8,13 @@ import platform.PlatformConstants;
 import platform.User;
 import platform.movies.Movie;
 
-import java.io.IOException;
-
 public final class SubscribeCommand implements Command {
     private final Platform platform;
     private final String subscribedGenre;
     private final ObjectMapper objectMapper;
 
-    public SubscribeCommand(final String subscribedGenre) throws IOException {
-        platform = Platform.getInstance();
+    public SubscribeCommand(final String subscribedGenre, final Platform platform) {
+        this.platform = platform;
         objectMapper = PlatformConstants.OBJECT_MAPPER;
         this.subscribedGenre = subscribedGenre;
     }
@@ -41,6 +39,7 @@ public final class SubscribeCommand implements Command {
 
         if (searchedMovie.getGenres().contains(subscribedGenre)) {
             currentUser.getSubscribedGenres().add(subscribedGenre);
+            platform.addObserver(currentUser);
         } else {
             parseErrorOutput(jsonObject, objectMapper);
         }

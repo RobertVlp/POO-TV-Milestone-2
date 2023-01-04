@@ -3,36 +3,30 @@ package platform;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sun.tools.javac.Main;
 import platform.actions.Action;
 import platform.movies.Movie;
-import visitor.Visitable;
-import visitor.Visitor;
+import platform.observer.Observable;
+import platform.observer.Observer;
+import platform.visitor.Visitable;
+import platform.visitor.Visitor;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public final class Platform implements Visitable {
-    private static Platform platformInstance;
+public final class Platform implements Visitable, Observable {
     private ArrayList<User> users;
     private ArrayList<Movie> movies;
     private ArrayList<Action> actions;
     private String currentPage;
     private User currentUser;
     private Movie searchedMovie;
+    private final ArrayList<Observer> observers;
+    private String performedAction;
 
-    private Platform() {
+    public Platform() {
         setCurrentPage("homepage neautentificat");
-    }
-
-    public static Platform getInstance() throws IOException {
-        if (platformInstance == null) {
-            File inputFile = new File(PlatformConstants.getInputFile());
-            platformInstance = PlatformConstants.OBJECT_MAPPER.readValue(inputFile, Platform.class);
-        }
-
-        return platformInstance;
+        observers = new ArrayList<>();
     }
 
     public ArrayList<User> getUsers() {
@@ -90,10 +84,10 @@ public final class Platform implements Visitable {
 
         if (error != null) {
             parseErrorOutput(jsonObject, objectMapper);
+            return;
         } else if (action.getPage().equals("movies")) {
             updateAvailableMovies();
             parseSuccessOutput(jsonObject, objectMapper, currentUser);
-            currentUser.getPages().push(currentPage);
         } else if (action.getPage().equals("see details")) {
             searchedMovie = null;
 
@@ -106,14 +100,19 @@ public final class Platform implements Visitable {
 
             if (searchedMovie != null) {
                 parseMovieOutput(jsonObject, objectMapper, searchedMovie, currentUser);
-                currentUser.getPages().push(currentPage);
             } else {
                 parseErrorOutput(jsonObject, objectMapper);
                 setCurrentPage("movies");
+                return;
             }
         }
 
+        if (currentUser != null) {
+            currentUser.getPages().push(currentPage);
+        }
+
         if (action.getPage().equals("logout")) {
+            assert currentUser != null;
             currentUser.getPages().clear();
             setCurrentUser(null);
             setCurrentPage("homepage neautentificat");
@@ -138,6 +137,7 @@ public final class Platform implements Visitable {
         } else {
             currentUser.getAvailableMovies().clear();
             parseSuccessOutput(jsonObject, objectMapper, currentUser);
+            currentUser.getPages().push(currentPage);
         }
     }
 
@@ -301,6 +301,37 @@ public final class Platform implements Visitable {
             parseErrorOutput(jsonObject, objectMapper);
         } else {
             parseMovieOutput(jsonObject, objectMapper, searchedMovie, currentUser);
+        }
+    }
+
+    @Override
+    public void addObserver(final Observer observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+
+    @Override
+    public void modifyState(
+            final String performedAction,
+            final Movie movie,
+            final String movieName
+    ) {
+        this.performedAction = performedAction;
+        notifyObservers(movie, movieName);
+    }
+
+    @Override
+    public void notifyObservers(
+            final Movie movie,
+            final String movieName
+    ) {
+        for (Observer observer : observers) {
+            if (performedAction.equals("ADD")) {
+                observer.updateAddedMovie(movie);
+            } else {
+                observer.updateDeletedMovie(movieName);
+            }
         }
     }
 }
