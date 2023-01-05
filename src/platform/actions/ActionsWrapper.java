@@ -1,12 +1,12 @@
 package platform.actions;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import commands.*;
 import platform.Platform;
 import platform.PlatformConstants;
+import platform.User;
 import platform.visitor.PlatformVisitor;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ public final class ActionsWrapper {
     /**
      * Performs the actions received from the input
      * @param output for output
-     * @throws JsonProcessingException in case of exceptions when processing the json object
+     * @throws IOException in case of exceptions when processing the json object
      */
     public void performActions(
             final PlatformVisitor platformVisitor,
@@ -165,6 +165,16 @@ public final class ActionsWrapper {
             }
 
             if (!jsonObject.isEmpty()) {
+                output.add(jsonObject);
+            }
+        }
+
+        User currentUser = platform.getCurrentUser();
+
+        if (currentUser != null) {
+            if (currentUser.getCredentials().getAccountType().equals("premium")) {
+                ObjectNode jsonObject = PlatformConstants.OBJECT_MAPPER.createObjectNode();
+                invoker.runCommand(new RecommendCommand(platform), jsonObject);
                 output.add(jsonObject);
             }
         }

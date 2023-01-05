@@ -9,9 +9,6 @@ import platform.observer.Observable;
 import platform.observer.Observer;
 import platform.visitor.Visitable;
 import platform.visitor.Visitor;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public final class Platform implements Visitable, Observable {

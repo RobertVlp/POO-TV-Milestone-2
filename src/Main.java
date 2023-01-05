@@ -18,7 +18,9 @@ public final class Main {
         PlatformConstants.setInputFile(args[0]);
         PlatformConstants.setOutputFile(args[1]);
 
-        Platform platform = PlatformConstants.OBJECT_MAPPER.readValue(new File(args[0]), Platform.class);
+        Platform platform = PlatformConstants.OBJECT_MAPPER.readValue(
+                new File(args[0]), Platform.class
+        );
 
         ArrayNode output = PlatformConstants.OBJECT_MAPPER.createArrayNode();
         PlatformVisitor platformVisitor = new PlatformVisitor(platform);

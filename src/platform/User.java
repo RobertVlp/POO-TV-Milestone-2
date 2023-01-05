@@ -69,7 +69,7 @@ public final class User implements Observer {
     private final Stack<String> pages;
     private final ArrayList<Notifications> notifications;
 
-    private record Notifications(String movieName, String message) {
+    public record Notifications(String movieName, String message) {
     }
 
     public User() {

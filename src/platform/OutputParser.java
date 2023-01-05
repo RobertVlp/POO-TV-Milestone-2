@@ -91,4 +91,21 @@ public interface OutputParser {
                 "currentMoviesList", new ArrayList<>(List.of(searchedMovie)));
         parseOutput(jsonObject, objectMapper, "currentUser", currentUser);
     }
+
+    /**
+     * Sets the json object with the details for the recommended movie output
+     * @param jsonObject for json object
+     * @param objectMapper for object mapper
+     * @param currentUser for the current user
+     * @throws JsonProcessingException in case of exceptions when processing the json object
+     */
+    default void parseRecommendOutput(
+            ObjectNode jsonObject,
+            ObjectMapper objectMapper,
+            User currentUser
+    ) throws JsonProcessingException {
+        parseOutput(jsonObject, objectMapper, "error", null);
+        parseOutput(jsonObject, objectMapper, "currentMoviesList", null);
+        parseOutput(jsonObject, objectMapper, "currentUser", currentUser);
+    }
 }

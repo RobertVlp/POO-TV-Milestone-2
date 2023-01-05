@@ -1,9 +1,7 @@
 package platform.visitor;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import platform.actions.Action;
 import platform.Platform;

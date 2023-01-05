@@ -155,7 +155,11 @@ public final class Test {
         System.out.println("This value can be exceeded for great implementations.");
     }
 
-    private static void runTest(final String testFileName, final Config config, final Future<Object> task) {
+    private static void runTest(
+            final String testFileName,
+            final Config config,
+            final Future<Object> task
+    ) {
         ObjectMapper objectMapper = new ObjectMapper();
         File refFile = new File(CHECKER_RESOURCES_FOLDER + REF_FOLDER + testFileName);
 
@@ -203,7 +207,7 @@ public final class Test {
         return executor.submit(task);
     }
 
-    private static String[] createTestArgv(final File testFile, String testFileName) {
+    private static String[] createTestArgv(final File testFile, final String testFileName) {
         List<String> listArgv = new ArrayList<>();
         listArgv.add(testFile.getAbsolutePath());
         listArgv.add(OUT_FILE);
@@ -219,7 +223,11 @@ public final class Test {
         printMessage(testFileName, message, false);
     }
 
-    private static void printMessage(final String testFileName, final String message, final boolean trail) {
+    private static void printMessage(
+            final String testFileName,
+            final String message,
+            final boolean trail
+    ) {
         String fileName = testFileName.split("\\.")[0];
         if (trail) {
             System.out.println("[" + fileName + "]: ..................... " + message);
