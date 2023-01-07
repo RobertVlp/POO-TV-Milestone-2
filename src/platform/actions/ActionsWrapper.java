@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import commands.*;
-import platform.Platform;
-import platform.PlatformConstants;
-import platform.User;
+import platform.*;
+import strategies.*;
 import platform.visitor.PlatformVisitor;
 
 import java.io.IOException;
@@ -39,35 +38,40 @@ public final class ActionsWrapper {
 
             switch (action.getType()) {
                 case "change page" ->
-                    platform.acceptChangePage(
-                            platformVisitor,
-                            action,
-                            jsonObject,
-                            objectMapper
-                    );
+                        platform.acceptChangePage(
+                                platformVisitor,
+                                action,
+                                jsonObject,
+                                objectMapper
+                        );
 
                 case "back" ->
-                        invoker.runCommand(
+                        new Context(
+                                new Back(),
+                                invoker,
                                 new BackCommand(platform),
                                 jsonObject
-                        );
+                        ).executeStrategy();
 
                 case "database" -> {
                     switch (action.getFeature()) {
                         case "add" ->
-                                invoker.runCommand(
+                                new Context(
+                                        new AddMovie(),
+                                        invoker,
                                         new AddMovieCommand(action.getAddedMovie(), platform),
                                         jsonObject
-                                );
+                                ).executeStrategy();
 
                         case "delete" ->
-                                invoker.runCommand(
+                                new Context(
+                                        new DeleteMovie(),
+                                        invoker,
                                         new DeleteMovieCommand(action.getDeletedMovie(), platform),
                                         jsonObject
-                                );
+                                ).executeStrategy();
 
                         default -> {
-
                         }
                     }
                 }
@@ -150,10 +154,12 @@ public final class ActionsWrapper {
                                 );
 
                         case "subscribe" ->
-                                invoker.runCommand(
+                                new Context(
+                                        new Subscribe(),
+                                        invoker,
                                         new SubscribeCommand(action.getSubscribedGenre(), platform),
                                         jsonObject
-                                );
+                                ).executeStrategy();
 
                         default -> {
                         }
@@ -174,7 +180,14 @@ public final class ActionsWrapper {
         if (currentUser != null) {
             if (currentUser.getCredentials().getAccountType().equals("premium")) {
                 ObjectNode jsonObject = PlatformConstants.OBJECT_MAPPER.createObjectNode();
-                invoker.runCommand(new RecommendCommand(platform), jsonObject);
+
+                new Context(
+                        new Recommend(),
+                        invoker,
+                        new RecommendCommand(platform),
+                        jsonObject
+                ).executeStrategy();
+
                 output.add(jsonObject);
             }
         }

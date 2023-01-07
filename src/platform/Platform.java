@@ -10,6 +10,8 @@ import platform.observer.Observer;
 import platform.visitor.Visitable;
 import platform.visitor.Visitor;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 public final class Platform implements Visitable, Observable {
     private ArrayList<User> users;
@@ -330,5 +332,190 @@ public final class Platform implements Visitable, Observable {
                 observer.updateDeletedMovie(movieName);
             }
         }
+    }
+
+    /**
+     * Current logged-in user subscribes to a specified genre
+     * @param subscribedGenre for the subscribed genre
+     * @param jsonObject for the json object
+     * @param objectMapper for the object mapper
+     * @throws JsonProcessingException in case of exceptions when processing the json object
+     */
+    public void subscribe(
+            final String subscribedGenre,
+            final ObjectNode jsonObject,
+            final ObjectMapper objectMapper
+    ) throws JsonProcessingException {
+        if (!currentPage.equals("see details")) {
+            parseErrorOutput(jsonObject, objectMapper);
+            return;
+        }
+
+        if (currentUser.getSubscribedGenres().contains(subscribedGenre)) {
+            parseErrorOutput(jsonObject, objectMapper);
+            return;
+        }
+
+        if (searchedMovie.getGenres().contains(subscribedGenre)) {
+            currentUser.getSubscribedGenres().add(subscribedGenre);
+            addObserver(currentUser);
+        } else {
+            parseErrorOutput(jsonObject, objectMapper);
+        }
+    }
+
+    /**
+     * Adds a specified movie to the database
+     * @param addedMovie for the added movie
+     * @param jsonObject for the json object
+     * @param objectMapper for the object mapper
+     * @throws JsonProcessingException in case of exceptions when processing the json object
+     */
+    public void addMovie(
+            final Movie addedMovie,
+            final ObjectNode jsonObject,
+            final ObjectMapper objectMapper
+    ) throws JsonProcessingException {
+        for (Movie movie : movies) {
+            if (movie.getName().equals(addedMovie.getName())) {
+                parseErrorOutput(jsonObject, objectMapper);
+                return;
+            }
+        }
+
+        getMovies().add(addedMovie);
+        modifyState("ADD", addedMovie, null);
+    }
+
+    /**
+     * Deletes a specified movie from the database
+     * @param deletedMovie for the name of the movie
+     * @param jsonObject for the json object
+     * @param objectMapper for the object mapper
+     * @throws JsonProcessingException in case of exceptions when processing the json object
+     */
+    public void deleteMovie(
+            final String deletedMovie,
+            final ObjectNode jsonObject,
+            final ObjectMapper objectMapper
+    ) throws JsonProcessingException {
+        for (Movie movie : movies) {
+            if (movie.getName().equals(deletedMovie)) {
+                movies.remove(movie);
+                modifyState("DELETE", null, deletedMovie);
+                return;
+            }
+        }
+
+        parseErrorOutput(jsonObject, objectMapper);
+    }
+
+    /**
+     * Navigates to the previous page that the user accessed
+     * @param jsonObject for the json object
+     * @param objectMapper for the object mapper
+     * @throws JsonProcessingException in case of exceptions when processing the json object
+     */
+    public void navigateToPreviousPage(
+            final ObjectNode jsonObject,
+            final ObjectMapper objectMapper
+    ) throws JsonProcessingException {
+        if (currentUser == null) {
+            parseErrorOutput(jsonObject, objectMapper);
+            return;
+        }
+
+        if (currentUser.getPages().isEmpty()) {
+            parseErrorOutput(jsonObject, objectMapper);
+        } else {
+            String currentPage = currentUser.getPages().pop();
+
+            if (currentPage.equals("homepage autentificat")) {
+                parseErrorOutput(jsonObject, objectMapper);
+                return;
+            }
+
+            if (currentUser.getPages().isEmpty()) {
+                return;
+            }
+
+            String lastAccessedPage = currentUser.getPages().pop();
+
+            setCurrentPage(lastAccessedPage);
+
+            if (lastAccessedPage.equals("see details")) {
+                parseMovieOutput(jsonObject, objectMapper, searchedMovie, currentUser);
+            } else if (lastAccessedPage.equals("movies")) {
+                parseSuccessOutput(jsonObject, objectMapper, currentUser);
+            }
+
+            currentUser.getPages().push(lastAccessedPage);
+        }
+    }
+
+    /**
+     * Recommends a movie to the current user if he/she has a premium account
+     * @param jsonObject for json object
+     * @param objectMapper for object mapper
+     * @throws JsonProcessingException in case of exceptions when processing the json object
+     */
+    public void recommendMovie(
+            final ObjectNode jsonObject,
+            final ObjectMapper objectMapper
+    ) throws JsonProcessingException {
+        if (currentUser.getLikedMovies().isEmpty()) {
+            currentUser.getNotifications().add(
+                    new User.Notifications("No recommendation", "Recommendation")
+            );
+            parseRecommendOutput(jsonObject, objectMapper, currentUser);
+            return;
+        }
+
+        TreeMap<String, Integer> preferredGenres = new TreeMap<>();
+
+        for (Movie likedMovie : currentUser.getLikedMovies()) {
+            for (String genre : likedMovie.getGenres()) {
+                if (preferredGenres.containsKey(genre)) {
+                    int numLikes = preferredGenres.get(genre);
+                    preferredGenres.replace(genre, numLikes, numLikes + 1);
+                } else {
+                    preferredGenres.put(genre, 1);
+                }
+            }
+        }
+
+        movies.sort((o1, o2) -> Integer.compare(o2.getNumLikes(), o1.getNumLikes()));
+
+        while (!preferredGenres.isEmpty()) {
+            String mostLikedGenre = null;
+            int maxLikes = 0;
+
+            for (Map.Entry<String, Integer> entry : preferredGenres.entrySet()) {
+                if (entry.getValue() > maxLikes) {
+                    maxLikes = entry.getValue();
+                    mostLikedGenre = entry.getKey();
+                }
+            }
+
+            for (Movie movie : movies) {
+                if (!movie.getCountriesBanned().contains(currentUser.getCredentials().getCountry())) {
+                    if (movie.getGenres().contains(mostLikedGenre)
+                            && !currentUser.getWatchedMovies().contains(movie)) {
+                        currentUser.getNotifications().add(
+                                new User.Notifications(movie.getName(), "Recommendation")
+                        );
+                        parseRecommendOutput(jsonObject, objectMapper, currentUser);
+                        return;
+                    }
+                }
+            }
+
+            preferredGenres.remove(mostLikedGenre);
+        }
+
+        currentUser.getNotifications().add(
+                new User.Notifications("No recommendation", "Recommendation")
+        );
+        parseRecommendOutput(jsonObject, objectMapper, currentUser);
     }
 }

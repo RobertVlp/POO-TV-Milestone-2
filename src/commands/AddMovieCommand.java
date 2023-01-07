@@ -20,14 +20,6 @@ public final class AddMovieCommand implements Command {
 
     @Override
     public void execute(final ObjectNode jsonObject) throws JsonProcessingException {
-        for (Movie movie : platform.getMovies()) {
-            if (movie.getName().equals(addedMovie.getName())) {
-                parseErrorOutput(jsonObject, objectMapper);
-                return;
-            }
-        }
-
-        platform.getMovies().add(addedMovie);
-        platform.modifyState("ADD", addedMovie, null);
+        platform.addMovie(addedMovie, jsonObject, objectMapper);
     }
 }
