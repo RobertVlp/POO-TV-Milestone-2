@@ -9,6 +9,7 @@ import platform.User;
 import platform.movies.Movie;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public final class RecommendCommand implements Command {
     private final Platform platform;
@@ -20,7 +21,7 @@ public final class RecommendCommand implements Command {
     }
 
     @Override
-    public void execute(ObjectNode jsonObject) throws JsonProcessingException {
+    public void execute(final ObjectNode jsonObject) throws JsonProcessingException {
         User currentUser = platform.getCurrentUser();
 
         if (currentUser.getLikedMovies().isEmpty()) {
@@ -31,7 +32,7 @@ public final class RecommendCommand implements Command {
             return;
         }
 
-        HashMap<String, Integer> preferredGenres = new HashMap<>();
+        TreeMap<String, Integer> preferredGenres = new TreeMap<>();
 
         for (Movie likedMovie : currentUser.getLikedMovies()) {
             for (String genre : likedMovie.getGenres()) {

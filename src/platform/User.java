@@ -81,7 +81,7 @@ public final class User implements Observer {
         subscribedGenres = new ArrayList<>();
         pages = new Stack<>();
         notifications = new ArrayList<>();
-        setNumFreePremiumMovies(15);
+        setNumFreePremiumMovies(PlatformConstants.NUM_FREE_MOVIES);
         setTokensCount(0);
     }
 

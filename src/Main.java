@@ -19,7 +19,7 @@ public final class Main {
         PlatformConstants.setOutputFile(args[1]);
 
         Platform platform = PlatformConstants.OBJECT_MAPPER.readValue(
-                new File(args[0]), Platform.class
+                new File(PlatformConstants.getInputFile()), Platform.class
         );
 
         ArrayNode output = PlatformConstants.OBJECT_MAPPER.createArrayNode();

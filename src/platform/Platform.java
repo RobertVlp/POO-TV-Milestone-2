@@ -310,11 +310,11 @@ public final class Platform implements Visitable, Observable {
 
     @Override
     public void modifyState(
-            final String performedAction,
+            final String action,
             final Movie movie,
             final String movieName
     ) {
-        this.performedAction = performedAction;
+        performedAction = action;
         notifyObservers(movie, movieName);
     }
 

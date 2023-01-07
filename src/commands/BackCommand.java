@@ -49,6 +49,8 @@ public final class BackCommand implements Command {
             } else if (lastAccessedPage.equals("movies")) {
                 parseSuccessOutput(jsonObject, objectMapper, currentUser);
             }
+
+            currentUser.getPages().push(lastAccessedPage);
         }
     }
 }

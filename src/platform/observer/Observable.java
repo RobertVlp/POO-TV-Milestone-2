@@ -11,11 +11,11 @@ public interface Observable {
 
     /**
      * Modifies the state of the object, updating all of it's observers
-     * @param performedAction for the performed action
+     * @param action for the performed action
      * @param movie for movie, in case a new movie has been added
      * @param movieName for the name of the movie, in case a movie has been deleted
      */
-    void modifyState(String performedAction, Movie movie, String movieName);
+    void modifyState(String action, Movie movie, String movieName);
 
     /**
      * Notifies all the observers according to the action that was performed

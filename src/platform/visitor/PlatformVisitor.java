@@ -3,6 +3,7 @@ package platform.visitor;
 import java.util.ArrayList;
 import java.util.Map;
 
+import platform.PlatformConstants;
 import platform.actions.Action;
 import platform.Platform;
 import platform.User;
@@ -188,11 +189,11 @@ public final class PlatformVisitor implements Visitor {
 
         Integer userTokens = platform.getCurrentUser().getTokensCount();
 
-        if (userTokens < 10) {
+        if (userTokens < PlatformConstants.PREMIUM_TOKENS) {
             return "Error";
         }
 
-        userTokens -= 10;
+        userTokens -= PlatformConstants.PREMIUM_TOKENS;
 
         platform.getCurrentUser().setTokensCount(userTokens);
         platform.getCurrentUser().getCredentials().setAccountType("premium");
@@ -286,7 +287,7 @@ public final class PlatformVisitor implements Visitor {
 
         if (isMovieWatched(platform.getSearchedMovie())) {
             Integer numLikes = platform.getSearchedMovie().getNumLikes();
-            numLikes += 1;
+            numLikes++;
 
             platform.getSearchedMovie().setNumLikes(numLikes);
             platform.getCurrentUser().getLikedMovies().add(platform.getSearchedMovie());
@@ -303,7 +304,7 @@ public final class PlatformVisitor implements Visitor {
             return "Error";
         }
 
-        if (rate > 5) {
+        if (rate > PlatformConstants.MAX_MOVIE_RATING) {
             return "Error";
         }
 
